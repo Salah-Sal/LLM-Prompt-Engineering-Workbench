@@ -121,9 +121,9 @@ def count_tokens(text: str, model_name: str) -> int:
 
 # --- Expose functions to JavaScript ---
 # Make Python functions callable from JS using pyodide.globals.get('function_name')
-# js.globals.set('build_prompt_data', build_prompt_data)
-# js.globals.set('count_tokens', count_tokens)
+js.globals.set('build_prompt_data', build_prompt_data)
+js.globals.set('count_tokens', count_tokens)
 
 # No longer needed when importing the module via pyimport in JS
 
-print("prompter.py loaded. Functions NOT exposed via js.globals for debugging.")
+print("prompter.py loaded and functions exposed.")

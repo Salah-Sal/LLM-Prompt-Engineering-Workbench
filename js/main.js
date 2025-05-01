@@ -5,9 +5,7 @@ const apiKeyInput = document.getElementById('api-key');
 const systemPromptInput = document.getElementById('system-prompt');
 const userTemplateInput = document.getElementById('user-template');
 const templateVarsInput = document.getElementById('template-vars');
-const estimateTokensBtn = document.getElementById('estimate-tokens-btn');
 const runPromptBtn = document.getElementById('run-prompt-btn');
-const tokenCountSpan = document.getElementById('token-count');
 const renderedPromptOutput = document.getElementById('rendered-prompt-output');
 const llmResponseOutput = document.getElementById('llm-response-output');
 const errorOutput = document.getElementById('error-output');
@@ -39,7 +37,6 @@ function clearError() {
 function showLoading(isLoading) {
     loadingIndicator.classList.toggle('hidden', !isLoading);
     runPromptBtn.disabled = isLoading;
-    estimateTokensBtn.disabled = isLoading;
 }
 
 function updateModelOptions() {
@@ -61,7 +58,7 @@ async function initializePyodide() {
         pyodide = await loadPyodide();
         console.log("Pyodide loaded.");
         clearError();
-        showError("Loading Python dependencies (jinja2, tiktoken)...");
+        showError("Loading Python dependencies (jinja2)...");
 
         // Fetch and run the Python prompter code
         const pythonCodeResponse = await fetch('py/prompter.py');
@@ -73,7 +70,7 @@ async function initializePyodide() {
         // Load packages and run the Python script.
         await pyodide.loadPackage(['micropip']);
         const micropip = pyodide.pyimport("micropip");
-        await micropip.install(['jinja2', 'tiktoken']);
+        await micropip.install(['jinja2']);
         console.log("Python packages installed.");
 
         // Execute the Python script which defines the class and creates an instance
@@ -83,74 +80,27 @@ async function initializePyodide() {
         // *** NEW: Get the instance from Python's global scope AFTER script execution ***
         prompterInstance = pyodide.globals.get('prompter_instance'); // Get the instance created in Python
         
-        // Add a check to ensure the instance and its methods exist
-        if (!prompterInstance || typeof prompterInstance.build_prompt_data !== 'function' || typeof prompterInstance.count_tokens !== 'function') {
-            // Provide a more specific error if the instance itself wasn't found
+        // Add a check to ensure the instance and its method exist
+        if (!prompterInstance || typeof prompterInstance.build_prompt_data !== 'function') {
             if (!prompterInstance) {
                  throw new Error("Failed to get 'prompter_instance' from Python global scope. Check prompter.py script.");
             } else {
-                 throw new Error("Retrieved 'prompter_instance' from Python, but required methods (build_prompt_data, count_tokens) are missing.");
+                 throw new Error("Retrieved 'prompter_instance' from Python, but required method (build_prompt_data) is missing.");
             }
         }
 
         console.log("Python Prompter instance retrieved and ready.");
         clearError();
-        estimateTokensBtn.disabled = false;
         runPromptBtn.disabled = false;
 
     } catch (error) {
         console.error("Pyodide initialization failed:", error);
         showError(`Failed to initialize Python environment: ${error.message}. Try refreshing.`);
-        estimateTokensBtn.disabled = true;
         runPromptBtn.disabled = true;
     }
 }
 
 // --- Core Logic Functions ---
-async function handleEstimateTokens() {
-    clearError();
-    // Check if prompter instance exists
-    if (!prompterInstance || typeof prompterInstance.count_tokens !== 'function') {
-        showError("Python environment or Prompter instance/method not ready yet.");
-        return;
-    }
-
-    const userTemplate = userTemplateInput.value;
-    const templateVarsRaw = templateVarsInput.value;
-    const modelName = modelSelect.value;
-    let templateVars = {};
-
-    try {
-        templateVars = templateVarsRaw ? JSON.parse(templateVarsRaw) : {};
-    } catch (e) {
-        showError("Invalid JSON in Template Variables.");
-        return;
-    }
-
-    try {
-        // Call the method on the Python class instance
-        const promptDataPy = await prompterInstance.build_prompt_data(
-            "", 
-            userTemplate,
-            pyodide.toPy(templateVars) // Still need to convert for globals access
-        );
-        const promptData = promptDataPy.toJs({ dict_converter: Object.fromEntries });
-
-        renderedPromptOutput.textContent = promptData.final_user_message;
-
-        // Call the method on the Python class instance
-        const tokenCount = await prompterInstance.count_tokens(promptData.final_user_message, modelName);
-        tokenCountSpan.textContent = `Token Count (User Message): ${tokenCount}`;
-
-    } catch (error) {
-        console.error("Token estimation error:", error);
-        // Attempt to get Python error message if possible
-        const pyError = error.message.includes('PythonError:') ? error.pythonError.message : error.message;
-        showError(`Token estimation failed: ${pyError}`);
-        tokenCountSpan.textContent = `Token Count: Error`;
-    }
-}
-
 async function handleRunPrompt() {
     clearError();
     // Check if prompter instance exists
@@ -275,13 +225,11 @@ async function callLLM(apiKey, provider, modelName, promptData) {
 
 // --- Event Listeners ---
 providerSelect.addEventListener('change', updateModelOptions);
-estimateTokensBtn.addEventListener('click', handleEstimateTokens);
 runPromptBtn.addEventListener('click', handleRunPrompt);
 
 // --- Initial Setup ---
 document.addEventListener('DOMContentLoaded', () => {
     updateModelOptions(); // Populate models for the default provider
-    estimateTokensBtn.disabled = true; // Disabled until Pyodide loads
     runPromptBtn.disabled = true;
     initializePyodide();
 });

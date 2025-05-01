@@ -64,6 +64,8 @@ def count_tokens(text: str, model_name: str) -> int:
     Returns:
         The number of tokens.
     """
+    # --- REMOVED TEMPORARY DEBUGGING --- 
+
     try:
         # Get the appropriate encoding for the model
         encoding = tiktoken.encoding_for_model(model_name)

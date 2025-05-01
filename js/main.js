@@ -76,19 +76,24 @@ async function initializePyodide() {
         await micropip.install(['jinja2', 'tiktoken']);
         console.log("Python packages installed.");
 
-        // Execute the Python script which defines the class and exposes an instance
+        // Execute the Python script which defines the class and creates an instance
         await pyodide.runPythonAsync(pythonCode);
-        console.log("Python script executed.");
+        console.log("Python script executed (defined Prompter class).");
 
-        // Access the Prompter class instance exposed via `js.globals.set` in Python
-        prompterInstance = pyodide.globals.get('prompterInstance');
+        // *** NEW: Get the instance from Python's global scope AFTER script execution ***
+        prompterInstance = pyodide.globals.get('prompter_instance'); // Get the instance created in Python
         
         // Add a check to ensure the instance and its methods exist
         if (!prompterInstance || typeof prompterInstance.build_prompt_data !== 'function' || typeof prompterInstance.count_tokens !== 'function') {
-            throw new Error("Failed to access Prompter instance or its methods via js.globals. Check prompter.py.");
+            // Provide a more specific error if the instance itself wasn't found
+            if (!prompterInstance) {
+                 throw new Error("Failed to get 'prompter_instance' from Python global scope. Check prompter.py script.");
+            } else {
+                 throw new Error("Retrieved 'prompter_instance' from Python, but required methods (build_prompt_data, count_tokens) are missing.");
+            }
         }
 
-        console.log("Python Prompter instance ready.");
+        console.log("Python Prompter instance retrieved and ready.");
         clearError();
         estimateTokensBtn.disabled = false;
         runPromptBtn.disabled = false;

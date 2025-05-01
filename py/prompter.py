@@ -127,27 +127,15 @@ class Prompter:
         token_integers = encoding.encode(text)
         return len(token_integers)
 
-# --- Instantiate and Expose the Class Instance --- 
+# --- Instantiate the Class --- 
 # Create an instance of the class
 prompter_instance = Prompter()
 
-# --- Debugging js.globals --- 
-print("[Debug] Checking js object before setting globals...")
-try:
-    print(f"[Debug] Type of 'js' object: {type(js)}")
-    print(f"[Debug] Attributes of 'js' object: {dir(js)}")
-    has_globals = hasattr(js, 'globals')
-    print(f"[Debug] Does 'js' have 'globals' attribute? {has_globals}")
-    if has_globals:
-        print(f"[Debug] Type of 'js.globals': {type(js.globals)}")
-except NameError:
-    print("[Debug] 'js' object is not defined at this point.")
-except Exception as e:
-    print(f"[Debug] Error inspecting 'js' object: {e}")
+# --- Debugging js.globals (Removed) --- 
 
-# Expose the single instance to JavaScript
-print("[Debug] Attempting js.globals.set...")
-js.globals.set('prompterInstance', prompter_instance)
-print("[Debug] js.globals.set completed.")
+# --- Expose the single instance to JavaScript (REMOVED) --- 
+# print("[Debug] Attempting js.globals.set...")
+# js.globals.set('prompterInstance', prompter_instance)  <-- REMOVED
+# print("[Debug] js.globals.set completed.")
 
-print("Prompter class instance created and exposed to JS as 'prompterInstance'.")
+print("Prompter class instance created within Python scope.") # Updated print

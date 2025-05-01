@@ -1,0 +1,14 @@
+ # Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore Node modules if you were using npm for local dev tools (like a server)
+# node_modules/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE-specific files
+.vscode/
+.idea/

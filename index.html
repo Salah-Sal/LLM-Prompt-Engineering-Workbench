@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Prompt Engineering Workbench</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js"></script>
+</head>
+<body>
+    <header>
+        <h1>LLM Prompt Engineering Workbench</h1>
+        <p>Craft, test, and analyze prompts directly in your browser.</p>
+    </header>
+
+    <main>
+        <div class="config-section">
+            <h2>Configuration</h2>
+            <label for="llm-provider">LLM Provider:</label>
+            <select id="llm-provider">
+                <option value="openai">OpenAI</option>
+                <option value="cohere">Cohere</option>
+                </select>
+
+            <label for="llm-model">Model:</label>
+            <select id="llm-model">
+                <option value="gpt-4o">gpt-4o (OpenAI)</option>
+                 <option value="gpt-3.5-turbo">gpt-3.5-turbo (OpenAI)</option>
+                 <option value="command-r">command-r (Cohere)</option>
+            </select>
+
+            <label for="api-key">API Key:</label>
+            <input type="password" id="api-key" placeholder="Enter your API Key">
+            <p class="warning">
+                <strong>Security Warning:</strong> Your API key is used *directly* from your browser to call the selected LLM API.
+                It is NOT stored or sent anywhere else by this tool. However, pasting keys into web pages carries inherent risks.
+                Use a key with limited permissions/quota if possible. Clear the key after use.
+            </p>
+        </div>
+
+        <div class="prompt-section">
+            <h2>Prompt Components</h2>
+            <label for="system-prompt">System Prompt:</label>
+            <textarea id="system-prompt" rows="3" placeholder="e.g., You are a helpful assistant."></textarea>
+
+            <label for="user-template">User Message Template (Jinja2):</label>
+            <textarea id="user-template" rows="8" placeholder="e.g., Summarize the following text: {{ user_text }}"></textarea>
+
+            <label for="template-vars">Template Variables (JSON):</label>
+            <textarea id="template-vars" rows="4" placeholder='e.g., { "user_text": "The quick brown fox..." }'></textarea>
+
+            </div>
+
+        <div class="controls-section">
+            <button id="estimate-tokens-btn">Estimate Tokens</button>
+            <button id="run-prompt-btn">Run Prompt</button>
+            <span id="token-count">Token Count: -</span>
+        </div>
+
+        <div class="output-section">
+            <h2>Final Rendered Prompt</h2>
+            <pre id="rendered-prompt-output">Rendered prompt will appear here...</pre>
+
+            <h2>LLM Response</h2>
+            <div id="loading-indicator" class="hidden">Running...</div>
+            <pre id="llm-response-output">LLM response will appear here...</pre>
+            <div id="error-output" class="error hidden"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Powered by Pyodide and WebAssembly. Runs entirely in your browser.</p>
+        <p><a href="README.md" target="_blank">Read Me & License Info</a></p>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

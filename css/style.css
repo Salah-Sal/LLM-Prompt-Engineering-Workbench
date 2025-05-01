@@ -1,38 +1,101 @@
+:root {
+  /* Light Theme (Default) */
+  --bg-color: #f4f7f6;
+  --card-bg-color: #ffffff;
+  --text-color: #333333;
+  --heading-color: #2c3e50;
+  --primary-color: #3498db;
+  --primary-hover-color: #2980b9;
+  --secondary-color: #ecf0f1;
+  --border-color: #cccccc;
+  --muted-text-color: #777777;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --error-bg: #f8d7da;
+  --error-text: #721c24;
+  --error-border: #f5c6cb;
+  --warning-bg: #fff3cd;
+  --warning-text: #856404;
+  --warning-border: #ffeeba;
+  --input-bg: #ffffff;
+  --input-border: #cccccc;
+  --pre-bg: #ecf0f1;
+  --pre-border: #bdc3c7;
+
+  /* Modern Font */
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1a1a1a; /* Darker background */
+    --card-bg-color: #2c2c2c; /* Darker card background */
+    --text-color: #e0e0e0; /* Lighter text */
+    --heading-color: #ecf0f1; /* Lighter headings */
+    --primary-color: #5dade2; /* Slightly lighter blue */
+    --primary-hover-color: #3498db;
+    --secondary-color: #3a3a3a;
+    --border-color: #555555;
+    --muted-text-color: #aaaaaa;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --error-bg: #5a1a1f;
+    --error-text: #f8d7da;
+    --error-border: #721c24;
+    --warning-bg: #664d00;
+    --warning-text: #fff3cd;
+    --warning-border: #856404;
+    --input-bg: #3a3a3a;
+    --input-border: #555555;
+    --pre-bg: #333333;
+    --pre-border: #444444;
+  }
+}
+
 body {
-    font-family: sans-serif;
+    font-family: var(--font-family);
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 header, main, footer {
     max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin: 25px auto;
+    padding: 25px;
+    background-color: var(--card-bg-color);
+    box-shadow: 0 2px 15px var(--shadow-color);
     border-radius: 8px;
+    transition: background-color 0.3s ease;
 }
 
 header h1 {
     text-align: center;
-    color: #2c3e50;
+    color: var(--heading-color);
+    margin-bottom: 0.5em;
+}
+
+header p {
+    text-align: center;
+    color: var(--muted-text-color);
+    margin-top: 0;
 }
 
 h2 {
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 5px;
-    margin-top: 30px;
-    color: #2980b9;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+    margin-top: 35px;
+    margin-bottom: 20px; /* Added margin bottom */
+    color: var(--primary-hover-color);
 }
 
 label {
     display: block;
-    margin-top: 15px;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    font-weight: 600; /* Slightly bolder */
+    color: var(--text-color);
 }
 
 input[type="text"],
@@ -40,67 +103,92 @@ input[type="password"],
 select,
 textarea {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Needed to prevent padding from expanding element */
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px; /* Slightly more rounded */
+    box-sizing: border-box; 
     font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3); /* Subtle focus ring */
+}
+
+
 textarea {
-    min-height: 60px;
+    min-height: 80px;
     resize: vertical;
 }
 
 button {
-    background-color: #3498db;
+    background-color: var(--primary-color);
     color: white;
-    padding: 12px 20px;
+    padding: 12px 25px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 1rem;
+    font-weight: 600;
     margin-right: 10px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: var(--primary-hover-color);
+    transform: translateY(-1px); /* Subtle lift effect */
 }
 
-#token-count {
-    display: inline-block;
-    margin-left: 20px;
-    font-weight: bold;
+button:active {
+    transform: translateY(0px); 
 }
+
+button:disabled {
+    background-color: var(--muted-text-color);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Removed #token-count styles as element was removed */
 
 .output-section pre {
-    background-color: #ecf0f1;
+    background-color: var(--pre-bg);
     padding: 15px;
-    border: 1px solid #bdc3c7;
-    border-radius: 4px;
-    white-space: pre-wrap; /* Wrap long lines */
-    word-wrap: break-word; /* Break long words */
-    min-height: 50px;
+    border: 1px solid var(--pre-border);
+    border-radius: 6px;
+    white-space: pre-wrap; 
+    word-wrap: break-word; 
+    min-height: 60px;
+    color: var(--text-color);
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* Monospace font */
+    font-size: 0.95em;
+    line-height: 1.5;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
-    padding: 10px;
-    border-radius: 4px;
-    margin-top: 5px;
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border: 1px solid var(--warning-border);
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
     font-size: 0.9em;
 }
 
 .error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-    padding: 10px;
-    border-radius: 4px;
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-border);
+    padding: 12px;
+    border-radius: 6px;
     margin-top: 10px;
 }
 
@@ -110,28 +198,33 @@ button:hover {
 
 #loading-indicator {
     font-style: italic;
-    color: #555;
+    color: var(--muted-text-color);
+    margin-top: 10px;
 }
 
 footer {
     text-align: center;
     margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
     font-size: 0.9em;
-    color: #777;
+    color: var(--muted-text-color);
 }
 
 footer a {
-    color: #3498db;
+    color: var(--primary-color);
     text-decoration: none;
+    transition: color 0.3s ease;
 }
 footer a:hover {
+    color: var(--primary-hover-color);
     text-decoration: underline;
 }
 
 /* Basic Responsive adjustments */
 @media (max-width: 768px) {
     body { padding: 10px; }
-    header, main, footer { padding: 15px; margin: 10px auto; }
-    button { width: 100%; margin-bottom: 10px; }
-    #token-count { display: block; margin-left: 0; margin-top: 10px; text-align: center; }
+    header, main, footer { padding: 20px; margin: 15px auto; }
+    button { width: 100%; margin-bottom: 15px; margin-right: 0;}
+    /* Removed #token-count responsive styles */
 }

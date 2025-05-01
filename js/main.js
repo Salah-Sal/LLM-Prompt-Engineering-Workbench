@@ -15,7 +15,7 @@ const loadingIndicator = document.getElementById('loading-indicator');
 
 // --- Global State ---
 let pyodide = null;
-let prompter = null; // Will hold Python module/functions
+let prompterInstance = null; // Renamed global variable
 
 // --- Model Definitions (simplified) ---
 const models = {
@@ -70,30 +70,25 @@ async function initializePyodide() {
         }
         const pythonCode = await pythonCodeResponse.text();
 
-        // Load packages and run the Python script. Use runPythonAsync for top-level await in Python.
+        // Load packages and run the Python script.
         await pyodide.loadPackage(['micropip']);
         const micropip = pyodide.pyimport("micropip");
-        await micropip.install(['jinja2', 'tiktoken']); // Ensure tiktoken wheel is available for Pyodide/WASM
+        await micropip.install(['jinja2', 'tiktoken']);
         console.log("Python packages installed.");
 
-        // Execute the Python script to define functions
-        // Use pyodide.runPythonAsync if the Python script uses await (e.g., for async operations)
-        // If prompter.py doesn't use await, runPython is fine.
+        // Execute the Python script which defines the class and exposes an instance
         await pyodide.runPythonAsync(pythonCode);
         console.log("Python script executed.");
 
-        // Access the Python functions exposed via `js.globals.set` in Python
-        prompter = {
-            build_prompt_data: pyodide.globals.get('build_prompt_data'),
-            count_tokens: pyodide.globals.get('count_tokens')
-        };
+        // Access the Prompter class instance exposed via `js.globals.set` in Python
+        prompterInstance = pyodide.globals.get('prompterInstance');
         
-        // Add a check to ensure functions were actually exposed
-        if (!prompter.build_prompt_data || !prompter.count_tokens) {
-            throw new Error("Failed to access Python functions via js.globals. Check prompter.py.");
+        // Add a check to ensure the instance and its methods exist
+        if (!prompterInstance || typeof prompterInstance.build_prompt_data !== 'function' || typeof prompterInstance.count_tokens !== 'function') {
+            throw new Error("Failed to access Prompter instance or its methods via js.globals. Check prompter.py.");
         }
 
-        console.log("Python functions ready.");
+        console.log("Python Prompter instance ready.");
         clearError();
         estimateTokensBtn.disabled = false;
         runPromptBtn.disabled = false;
@@ -109,9 +104,9 @@ async function initializePyodide() {
 // --- Core Logic Functions ---
 async function handleEstimateTokens() {
     clearError();
-    // Check if prompter object exists
-    if (!prompter || !prompter.count_tokens) {
-        showError("Python environment or count_tokens function not ready yet.");
+    // Check if prompter instance exists
+    if (!prompterInstance || typeof prompterInstance.count_tokens !== 'function') {
+        showError("Python environment or Prompter instance/method not ready yet.");
         return;
     }
 
@@ -128,22 +123,18 @@ async function handleEstimateTokens() {
     }
 
     try {
-        // Call Python function to build just the user message part for token counting
-        // NOTE: Adjust Python function if needed to just render the user part
-        // Need to convert JS object to Python dict for functions accessed via globals
-        const promptDataPy = await prompter.build_prompt_data(
-            "", // No system prompt needed for this estimate
+        // Call the method on the Python class instance
+        const promptDataPy = await prompterInstance.build_prompt_data(
+            "", 
             userTemplate,
-            pyodide.toPy(templateVars) // Convert JS object to Python dict
+            pyodide.toPy(templateVars) // Still need to convert for globals access
         );
-        // Convert PyProxy Map to JS object 
         const promptData = promptDataPy.toJs({ dict_converter: Object.fromEntries });
 
-        // Render the prompt for user visibility (even though only user message is counted accurately here)
         renderedPromptOutput.textContent = promptData.final_user_message;
 
-        // Pass JS string directly is fine
-        const tokenCount = await prompter.count_tokens(promptData.final_user_message, modelName);
+        // Call the method on the Python class instance
+        const tokenCount = await prompterInstance.count_tokens(promptData.final_user_message, modelName);
         tokenCountSpan.textContent = `Token Count (User Message): ${tokenCount}`;
 
     } catch (error) {
@@ -157,9 +148,9 @@ async function handleEstimateTokens() {
 
 async function handleRunPrompt() {
     clearError();
-    // Check if prompter object exists
-    if (!prompter || !prompter.build_prompt_data) {
-        showError("Python environment or build_prompt_data function not ready yet.");
+    // Check if prompter instance exists
+    if (!prompterInstance || typeof prompterInstance.build_prompt_data !== 'function') {
+        showError("Python environment or Prompter instance/method not ready yet.");
         return;
     }
 
@@ -188,17 +179,15 @@ async function handleRunPrompt() {
     renderedPromptOutput.textContent = '';
 
     try {
-        // 1. Build the structured prompt data using Python
-        // Need to convert JS object to Python dict for functions accessed via globals
-        const promptDataPy = await prompter.build_prompt_data(
+        // 1. Build the structured prompt data using the method on the instance
+        const promptDataPy = await prompterInstance.build_prompt_data(
             systemPrompt,
             userTemplate,
-            pyodide.toPy(templateVars) // Convert JS object to Python dict
+            pyodide.toPy(templateVars) // Still need to convert for globals access
         );
-        // Convert the PyProxy map back to a JS object
         const promptData = promptDataPy.toJs({ dict_converter: Object.fromEntries });
 
-        renderedPromptOutput.textContent = `System: ${promptData.system_prompt}\nUser: ${promptData.final_user_message}`; // Display rendered parts
+        renderedPromptOutput.textContent = `System: ${promptData.system_prompt}\nUser: ${promptData.final_user_message}`; 
 
         // 2. Call the appropriate LLM API
         const response = await callLLM(apiKey, provider, modelName, promptData);

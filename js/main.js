@@ -61,9 +61,9 @@ async function initializePyodide() {
         showError("Loading Python dependencies (jinja2)...");
 
         // Fetch and run the Python prompter code
-        const pythonCodeResponse = await fetch('py/prompter.py');
+        const pythonCodeResponse = await fetch('py/prompt_logic.py');
         if (!pythonCodeResponse.ok) {
-             throw new Error(`Failed to fetch prompter.py: ${pythonCodeResponse.statusText}`);
+             throw new Error(`Failed to fetch py/prompt_logic.py: ${pythonCodeResponse.statusText}`);
         }
         const pythonCode = await pythonCodeResponse.text();
 

@@ -1,6 +1,7 @@
 import json
 import js # Pyodide's JS interface
 import micropip
+import os # Import os module for path checking
 
 # --- Import dependencies ---
 # We assume these were installed via micropip in main.js
@@ -65,7 +66,6 @@ def count_tokens(text: str, model_name: str) -> int:
     """
     try:
         # Get the appropriate encoding for the model
-        # tiktoken should handle mapping model names to encodings
         encoding = tiktoken.encoding_for_model(model_name)
     except KeyError:
         # Fallback for models not directly mapped (like Cohere models)
@@ -73,27 +73,43 @@ def count_tokens(text: str, model_name: str) -> int:
         try:
             print(f"Warning: No specific tiktoken encoding for model '{model_name}'. Falling back to loading 'cl100k_base' locally. Accuracy may vary.")
             # Define the expected path within Pyodide's filesystem
-            cl100k_base_path = "py/encodings/cl100k_base.tiktoken"
-            
+            # Use an absolute path from Pyodide's perspective
+            cl100k_base_path = "/home/pyodide/py/encodings/cl100k_base.tiktoken" 
+            # Assuming the server root maps to /home/pyodide, adjust if deployed differently
+            # Alternatively, construct relative path carefully if needed.
+
+            # Explicitly check if the file exists in Pyodide's FS
+            if not os.path.exists(cl100k_base_path):
+                # If check fails, try relative path as a backup
+                relative_path = "py/encodings/cl100k_base.tiktoken"
+                if not os.path.exists(relative_path):
+                     raise FileNotFoundError(f"Neither absolute '{cl100k_base_path}' nor relative '{relative_path}' found.")
+                else:
+                    cl100k_base_path = relative_path # Use the working relative path
+                    print(f"Found encoding file at relative path: {cl100k_base_path}")
+            else:
+                 print(f"Found encoding file at absolute path: {cl100k_base_path}")
+
             # Load the BPE ranks from the local file
+            print(f"Attempting to load BPE ranks from: {cl100k_base_path}")
             cl100k_base_ranks = load_tiktoken_bpe(cl100k_base_path)
+            print("Successfully loaded BPE ranks.")
             
             # Create the Encoding object manually
-            # You might need to specify special tokens depending on the model family
-            # For a general fallback, we'll use common settings.
             encoding = Encoding(
                 name="cl100k_base_local_fallback",
                 pat_str=r"(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]++|\s+(?!\S)|\s+",
                 mergeable_ranks=cl100k_base_ranks,
-                special_tokens={"<|endoftext|>": 100257} # Example, adjust if needed
+                special_tokens={"<|endoftext|>": 100257}
             )
+            print("Successfully created Encoding object from local file.")
 
-        except FileNotFoundError:
-             # This error means the user didn't download the file or place it correctly
-            raise ValueError(f"Could not get tiktoken encoding for model '{model_name}'. Fallback failed: 'py/encodings/cl100k_base.tiktoken' not found. Please ensure the file is downloaded and placed correctly.")
+        except FileNotFoundError as e:
+            # This error means the file wasn't found by os.path.exists
+            raise ValueError(f"Could not get tiktoken encoding for model '{model_name}'. Fallback failed: Local encoding file not found. Please ensure 'py/encodings/cl100k_base.tiktoken' exists in the project structure and was deployed. Details: {e}")
         except Exception as e:
-             # Catch other potential errors during local loading
-             raise ValueError(f"Could not get tiktoken encoding for model '{model_name}'. Fallback failed during local load: {e}")
+             # Catch other potential errors during local loading (e.g., parsing the file)
+             raise ValueError(f"Could not get tiktoken encoding for model '{model_name}'. Fallback failed during local load/parse from '{cl100k_base_path}': {e}")
     except Exception as e:
         # Catch errors during the initial encoding_for_model call
         raise ValueError(f"Tiktoken failed for model '{model_name}': {e}")

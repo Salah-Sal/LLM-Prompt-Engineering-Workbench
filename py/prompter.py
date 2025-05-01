@@ -7,6 +7,8 @@ import micropip
 try:
     from jinja2 import Environment, TemplateSyntaxError
     import tiktoken
+    from tiktoken.load import load_tiktoken_bpe # Import the BPE loader
+    from tiktoken import Encoding # Import Encoding class
 except ImportError as e:
     # This error should ideally be caught during the micropip install phase in JS
     print(f"Error importing Python packages: {e}")
@@ -66,13 +68,34 @@ def count_tokens(text: str, model_name: str) -> int:
         # tiktoken should handle mapping model names to encodings
         encoding = tiktoken.encoding_for_model(model_name)
     except KeyError:
-        # Fallback or attempt a default if model name isn't specific
+        # Fallback for models not directly mapped (like Cohere models)
+        # Attempt to load the common cl100k_base encoding LOCALLY
         try:
-            print(f"Warning: No specific encoding for model '{model_name}'. Falling back to 'cl100k_base'.")
-            encoding = tiktoken.get_encoding("cl100k_base") # Common default
+            print(f"Warning: No specific tiktoken encoding for model '{model_name}'. Falling back to loading 'cl100k_base' locally. Accuracy may vary.")
+            # Define the expected path within Pyodide's filesystem
+            cl100k_base_path = "py/encodings/cl100k_base.tiktoken"
+            
+            # Load the BPE ranks from the local file
+            cl100k_base_ranks = load_tiktoken_bpe(cl100k_base_path)
+            
+            # Create the Encoding object manually
+            # You might need to specify special tokens depending on the model family
+            # For a general fallback, we'll use common settings.
+            encoding = Encoding(
+                name="cl100k_base_local_fallback",
+                pat_str=r"(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]++|\s+(?!\S)|\s+",
+                mergeable_ranks=cl100k_base_ranks,
+                special_tokens={"<|endoftext|>": 100257} # Example, adjust if needed
+            )
+
+        except FileNotFoundError:
+             # This error means the user didn't download the file or place it correctly
+            raise ValueError(f"Could not get tiktoken encoding for model '{model_name}'. Fallback failed: 'py/encodings/cl100k_base.tiktoken' not found. Please ensure the file is downloaded and placed correctly.")
         except Exception as e:
-             raise ValueError(f"Could not get tiktoken encoding for model '{model_name}' or fallback: {e}")
+             # Catch other potential errors during local loading
+             raise ValueError(f"Could not get tiktoken encoding for model '{model_name}'. Fallback failed during local load: {e}")
     except Exception as e:
+        # Catch errors during the initial encoding_for_model call
         raise ValueError(f"Tiktoken failed for model '{model_name}': {e}")
 
     token_integers = encoding.encode(text)

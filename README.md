@@ -1,10 +1,10 @@
 # LLM Prompt Engineering Workbench
 
-[![GitHub Pages Deploy](https://github.com/<YourUsername>/<YourRepositoryName>/actions/workflows/pages/pages-build-deployment/badge.svg)](https://<YourUsername>.github.io/<YourRepositoryName>/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Pages Deploy](https://github.com/salah-sal/LLM-Prompt-Engineering-Workbench/actions/workflows/pages/pages-build-deployment/badge.svg)](https://salah-sal.github.io/LLM-Prompt-Engineering-Workbench/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A browser-based workbench for crafting, testing, analyzing, and iterating on prompts for Large Language Models (LLMs) like those from OpenAI and Cohere. **No server needed!**
 
-**[➡️ Live Demo Here!](https://<YourUsername>.github.io/<YourRepositoryName>/)** ## The Core Idea: Serverless Python Power in the Browser! ✨
+**[➡️ Live Demo Here!](https://salah-sal.github.io/LLM-Prompt-Engineering-Workbench/)** ## The Core Idea: Serverless Python Power in the Browser! ✨
 
 This project isn't just another LLM tool; it's a demonstration of a powerful development pattern gaining traction in 2025: **running sophisticated Python logic directly in the user's web browser using WebAssembly (WASM) and Pyodide.**
 
@@ -53,7 +53,7 @@ This isn't just a novelty; it offers tangible benefits, especially for tools, ut
 
 ## Usage
 
-1.  **Visit the Live Demo:** [Link to your GitHub Pages URL here]
+1.  **Visit the Live Demo:** [https://salah-sal.github.io/LLM-Prompt-Engineering-Workbench/]
 2.  **Wait for Initialization:** The first load downloads Pyodide (~10-20MB) and Python packages (~few MBs). Subsequent visits should be faster due to browser caching. You'll see status messages.
 3.  **Configure:** Select the LLM Provider and Model you want to target.
 4.  **Enter API Key:** Paste your API key for the selected provider into the designated field. ***Read the security warning below!***
@@ -92,8 +92,8 @@ This isn't just a novelty; it offers tangible benefits, especially for tools, ut
 
 Want to tinker or contribute?
 
-1.  **Clone:** `git clone https://github.com/<YourUsername>/<YourRepositoryName>.git`
-2.  **Navigate:** `cd <YourRepositoryName>`
+1.  **Clone:** `git clone https://github.com/salah-sal/LLM-Prompt-Engineering-Workbench.git`
+2.  **Navigate:** `cd LLM-Prompt-Engineering-Workbench`
 3.  **Serve Locally:** Due to browser security policies (CORS, WASM loading), you need a local HTTP server.
     ```bash
     python -m http.server 8000
